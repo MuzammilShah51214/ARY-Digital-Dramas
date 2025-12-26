@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MERI ZINDAGI HAI TU - Neon Reverse</title>
+    <title>MERI ZINDAGI HAI TU - Fixed Top Player</title>
     <style>
         :root {
             --pink: #ff416c;
@@ -12,13 +12,13 @@
             --neon-purple: #bc00ff;
             --dark-bg: #000;
             --card-bg: #111;
-            --header-height: 210px;
+            --header-height: 210px; /* Mobile height */
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { background-color: var(--dark-bg); color: white; overflow-x: hidden; text-align: center;}
 
-        /* Header Area */
+        /* --- Header Area (Hero Image) --- */
         .hero-poster {
             position: fixed;
             top: 0; left: 0; width: 100%;
@@ -37,25 +37,31 @@
 
         .poster-overlay {
             position: absolute; bottom: 0; left: 0; right: 0;
-            
             background: linear-gradient(transparent, rgba(0,0,0,0.9));
             padding: 10px; z-index: 2;
         }
 
-        /* Player Box */
+        .poster-overlay h1 { font-size: 1.2rem; margin-bottom: 2px; }
+        .poster-overlay p { font-size: 11px; opacity: 0.8; }
+
+        /* --- FIXED PLAYER BOX (Top position fix) --- */
         .player-box {
             display: none; 
             position: fixed;
-            top: -3; left: 0; width: 100%;
-            height: var(--header-height);
+            top: 0 !important; /* Forces player to stay at the very top */
+            left: 0; 
+            width: 100%;
+            height: var(--header-height) !important;
             background: #000;
             z-index: 2000; 
-            align-items: center; justify-content: center;
+            /* Flex removed to prevent auto-centering */
         }
         
         .player-content { 
-            width: 100%; height: 100%;
-            position: relative; overflow: hidden;
+            width: 100%; 
+            height: 100%;
+            position: relative; 
+            overflow: hidden;
             background: #000;
         }
         
@@ -83,17 +89,16 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* Controls */
+        /* Controls UI */
         .bottom-ui { 
             position: absolute; bottom: 0; left: 0; right: 0;
-            background: #000000; 
-            padding: 8px 15px; 
+            background: rgba(0,0,0,0.8); padding: 8px 15px; 
             z-index: 10; opacity: 0; transition: opacity 0.3s ease;
             border-top: 1px solid #222;
         }
         
         .player-content.show-ui .bottom-ui { opacity: 1; }
-        .p-bar { width: 100%; height: 6px; background: rgba(255,255,255,0.2); cursor: pointer; margin-bottom: 5px; border-radius: 10px; }
+        .p-bar { width: 100%; height: 5px; background: rgba(255,255,255,0.2); cursor: pointer; margin-bottom: 5px; border-radius: 10px; }
         .p-fill { height: 100%; background: var(--pink); width: 0%; border-radius: 10px; }
         
         .controls-row { display: flex; justify-content: space-between; align-items: center; }
@@ -102,30 +107,29 @@
         
         .close-player-btn {
             position: absolute; top: 5px; right: 10px; width: 30px; height: 30px; 
-            border-radius: 50%; background: #000; border: 1px solid var(--pink);
+            border-radius: 50%; background: rgba(0,0,0,0.7); border: 1px solid var(--pink);
             color: white; cursor: pointer; z-index: 11; opacity: 0;
         }
         .player-content.show-ui .close-player-btn { opacity: 1; }
 
+        /* Episode Grid */
         .container { 
             padding: 15px; max-width: 1100px; 
             margin: calc(var(--header-height) + 10px) auto 0 auto; 
         }
 
         .section-title {
-            font-size: 28px; font-weight: bold; border-left: 4px solid var(--pink);
+            font-size: 20px; font-weight: bold; border-left: 4px solid var(--pink);
             padding-left: 12px; margin: 20px 0; text-align: left;
         }
 
         .episode-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
 
-        /* --- Neon Border Animation --- */
+        /* Neon Cards */
         .ep-card {
             background: #111; border-radius: 10px; overflow: hidden;
-            border: 1px solid #333; transition: 0.4s;
-            position: relative;
-            padding: 2.5px;
-            cursor: pointer;
+            border: 1px solid #333; transition: 0.3s;
+            position: relative; padding: 2.5px; cursor: pointer;
         }
 
         .ep-card.active {
@@ -146,8 +150,9 @@
         .ep-inner { background: #111; border-radius: 8px; overflow: hidden; height: 100%; position: relative; z-index: 1; }
         .ep-upper { width: 100%; aspect-ratio: 16/9; overflow: hidden; }
         .ep-upper img { width: 100%; height: 100%; object-fit: cover; }
-        .ep-lower { padding: 8px; font-size: 12px; color: white; font-weight: 500; }
+        .ep-lower { padding: 8px; font-size: 11px; color: white; font-weight: 500; }
 
+        /* Desktop Fixes */
         @media (min-width: 768px) { 
             .episode-grid { grid-template-columns: repeat(4, 1fr); gap: 20px; }
             :root { --header-height: 450px; }
@@ -156,7 +161,7 @@
 </head>
 <body>
 
-    <div class="hero-poster">
+    <div class="hero-poster" id="heroHeader">
         <img src="https://i.pinimg.com/736x/d6/c6/89/d6c689aa557deae847e967e598a6c19a.jpg">
         <div class="poster-overlay">
             <h1>MERI ZINDAGI HAI TU</h1>
@@ -210,10 +215,7 @@
                 card.className = 'ep-card';
                 card.id = 'ep-' + i;
                 card.onclick = () => openPlayer(i);
-                
-                // --- Reverse Numbering Formula (14 to 1) ---
                 const displayNum = EPISODE_COUNT - i; 
-                
                 card.innerHTML = `
                     <div class="ep-inner">
                         <div class="ep-upper"><img src="${CUSTOM_THUMBNAIL}"></div>
@@ -232,7 +234,7 @@
 
         function onYouTubeIframeAPIReady() {
             player = new YT.Player('youtube-player', {
-                playerVars: { 'listType': 'playlist', 'list': PLAYLIST_ID, 'controls': 0, 'modestbranding': 1, 'playsinline': 1, 'enablejsapi': 1, 'origin': location.origin },
+                playerVars: { 'listType': 'playlist', 'list': PLAYLIST_ID, 'controls': 0, 'modestbranding': 1, 'playsinline': 1, 'enablejsapi': 1 },
                 events: { 'onStateChange': onStateChange }
             });
             setInterval(updateProgress, 500);
@@ -241,9 +243,8 @@
         function openPlayer(i) {
             document.querySelectorAll('.ep-card').forEach(el => el.classList.remove('active'));
             document.getElementById('ep-' + i).classList.add('active');
-
             currentIdx = i;
-            document.getElementById('playerBox').style.display = 'flex';
+            document.getElementById('playerBox').style.display = 'block'; // Top position fix
             document.getElementById('bufferingScreen').style.display = 'flex';
             if (player && player.loadPlaylist) { 
                 player.loadPlaylist({ list: PLAYLIST_ID, listType: 'playlist', index: i }); 
@@ -288,7 +289,6 @@
         }
 
         function playPause() { 
-            keepUIShown();
             if (player.getPlayerState() === 1) { player.pauseVideo(); document.getElementById('playIcon').innerText = '▶'; }
             else { player.playVideo(); document.getElementById('playIcon').innerText = '⏸'; }
         }
@@ -298,7 +298,6 @@
         function closePlayer() { document.getElementById('playerBox').style.display = 'none'; player.stopVideo(); }
 
         function seek(e) { 
-            keepUIShown();
             const rect = document.getElementById('progressBar').getBoundingClientRect(); 
             player.seekTo(((e.clientX - rect.left) / rect.width) * player.getDuration()); 
         }
@@ -306,9 +305,7 @@
         function toggleFullscreen() {
             const el = document.getElementById('playerArea');
             if (!document.fullscreenElement) {
-                el.requestFullscreen().then(() => {
-                    if (screen.orientation && screen.orientation.lock) screen.orientation.lock('landscape').catch(() => {});
-                });
+                el.requestFullscreen().catch(() => {});
             } else document.exitFullscreen();
         }
     </script>
