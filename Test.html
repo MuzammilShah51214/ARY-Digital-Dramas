@@ -1167,26 +1167,23 @@ async function openPlaylist(playlistId, title, coverImage) {
       }
     });
     
-    // Tarteeb wise sort karein
     rawVideos.sort((a, b) => new Date(a.snippet.publishedAt) - new Date(b.snippet.publishedAt));
 
-    // ✅ STRICT DUPLICATE EPISODE NUMBER REMOVAL
     const uniqueVideos = [];
     const seenEpisodeNumbers = new Set();
 
     rawVideos.forEach((item, idx) => {
       const originalTitle = item.snippet.title;
-      let epNum = idx + 1; // Default sequential fallback
+      let epNum = idx + 1;
 
       const epMatch = originalTitle.match(/(?:episode|ep)\s*[-:]?\s*(\d+)/i);
       if (epMatch && epMatch[1]) {
         epNum = parseInt(epMatch[1], 10);
       }
 
-      // Agar yeh episode number pehle aa chuka hai, toh dobara add mat karo
       if (!seenEpisodeNumbers.has(epNum)) {
         seenEpisodeNumbers.add(epNum);
-        item.extractedEpNum = epNum; // Store clean episode number
+        item.extractedEpNum = epNum;
         uniqueVideos.push(item);
       }
     });
@@ -1318,13 +1315,16 @@ function onPlayerReady() {
   setInterval(() => { if (isPlayerReady && player?.getCurrentTime) updateProgress(); }, 250);
 }
 
+// ✅ Updated Ad & Playback State Handling (Fixes Black Screen / Stuck Loader during Ads)
 function onPlayerStateChange(e) {
   if (e.data === YT.PlayerState.BUFFERING && hasStarted) {
-    loaderContainer.classList.add('active');
+    // Ad ke dauran black screen / infinite loading se bachne ke liye loader hata dein
+    loaderContainer.classList.remove('active');
   }
+  
   if (e.data === YT.PlayerState.PLAYING) {
     centerPlayOverlay.classList.add('hidden');
-    loaderContainer.classList.remove('active');
+    loaderContainer.classList.remove('active'); // ✅ Loader foran remove hoga taake ad saaf screen par dikhe
     ytPauseOverlay.style.display = 'none'; 
     
     isPlaying = true;
@@ -1332,8 +1332,13 @@ function onPlayerStateChange(e) {
     playPauseIcon.classList.add('fa-pause');
 
     if (player?.getDuration) {
-      totalTimeEl.textContent = fmt(player.getDuration());
-      totalTimeEl.classList.add('show');
+      try {
+        const dur = player.getDuration();
+        if (dur > 0) {
+          totalTimeEl.textContent = fmt(dur);
+          totalTimeEl.classList.add('show');
+        }
+      } catch (err) {}
     }
 
     if (isFullscreen) {
@@ -1344,6 +1349,7 @@ function onPlayerStateChange(e) {
       clearTimeout(hideControlsTimeout);
     }
   }
+  
   if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
     isPlaying = false;
     playPauseIcon.classList.remove('fa-pause');
